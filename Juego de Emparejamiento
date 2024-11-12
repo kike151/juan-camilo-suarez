@@ -1,0 +1,43 @@
+public class DBHelper extends SQLiteOpenHelper {
+    private static final String DATABASE_NAME = "MatchingGame.db";
+    private static final int DATABASE_VERSION = 1;
+
+    public DBHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+        public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE pairs (" +
+                   "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                   "pair_one TEXT, " +
+                   "pair_two TEXT)");
+    }
+
+      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS pairs");
+        onCreate(db);
+    }
+}
+public void insertPair(String pairOne, String pairTwo) {
+    SQLiteDatabase db = this.getWritableDatabase();
+    ContentValues values = new ContentValues();
+    values.put("pair_one", pairOne);
+    values.put("pair_two", pairTwo);
+    db.insert("pairs", null, values);
+    db.close();
+}
+public List<String[]> getAllPairs() {
+    List<String[]> pairsList = new ArrayList<>();
+    SQLiteDatabase db = this.getReadableDatabase();
+    Cursor cursor = db.rawQuery("SELECT * FROM pairs", null);
+    if (cursor.moveToFirst()) {
+        do {
+            String pairOne = cursor.getString(cursor.getColumnIndex("pair_one"));
+            String pairTwo = cursor.getString(cursor.getColumnIndex("pair_two"));
+            pairsList.add(new String[]{pairOne, pairTwo});
+        } while (cursor.moveToNext());
+    }
+    cursor.close();
+    db.close();
+    return pairsList;
+}
