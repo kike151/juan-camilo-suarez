@@ -1,0 +1,60 @@
+package com.example.matchinggame;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+public class DBHelper extends SQLiteOpenHelper {
+    private static final String DATABASE_NAME = "MatchingGame.db";
+    private static final int DATABASE_VERSION = 1;
+
+    public DBHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE attempts (" +
+                   "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                   "attempt_count INTEGER)");
+        // Insert an initial row with attempt_count as 0
+        ContentValues values = new ContentValues();
+        values.put("attempt_count", 0);
+        db.insert("attempts", null, values);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS attempts");
+        onCreate(db);
+    }
+
+    // Method to increment the attempt counter
+    public void incrementAttempt() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE attempts SET attempt_count = attempt_count + 1 WHERE id = 1");
+        db.close();
+    }
+
+    // Method to reset the attempt counter
+    public void resetAttempts() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE attempts SET attempt_count = 0 WHERE id = 1");
+        db.close();
+    }
+
+    // Method to get the current attempt count
+    public int getAttemptCount() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT attempt_count FROM attempts WHERE id = 1", null);
+        int attemptCount = 0;
+        if (cursor.moveToFirst()) {
+            attemptCount = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return attemptCount;
+    }
+}
